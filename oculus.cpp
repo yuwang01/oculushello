@@ -54,7 +54,6 @@ static void cleanup(void);
 static void reshape(int, int);
 static void update_rtarg(int, int);
 static unsigned int next_pow2(unsigned int);
-static void quat_to_matrix(const float*, float*);
 static void KeyCallback(GLFWwindow*, int, int, int, int);
 
 /* forward declaration to avoid including non-public headers of libovr */
