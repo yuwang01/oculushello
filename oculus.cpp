@@ -153,7 +153,7 @@ int initGLVR(void)
     GLFWmonitor* monitor = glfwGetPrimaryMonitor();
     const GLFWvidmode* vmode = glfwGetVideoMode(monitor);
 
-    window = glfwCreateWindow(g_gl_width, g_gl_height, "SPH - Oculus", NULL, NULL);
+    window = glfwCreateWindow(g_gl_width, g_gl_height, "Hello Oculus", NULL, NULL);
     glfwSetWindowPos(window, vmode->width, vmode->height);
 
     if (!window) {
