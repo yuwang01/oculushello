@@ -273,7 +273,7 @@ int initGLVR(void)
 
     fprintf(stdout, "%s\n", SEPARATOR);
     ////////////////////////////////////////////////////////////////////////////////
-    const char* vertex_shader_cube = readShader("shaders/vs_cube.glsl");
+    const char* vertex_shader_cube = readShader("shaders/vs_tri.glsl");
     // printf("\ncube vertex shader: \n%s\n", vertex_shader_cube);
 
     unsigned int vs_cube = glCreateShader(GL_VERTEX_SHADER);
@@ -281,7 +281,7 @@ int initGLVR(void)
     glCompileShader(vs_cube);
     print_shader_info_log(vs_cube);
 
-    const char* fragment_shader_cube = readShader("shaders/fs_cube.glsl");
+    const char* fragment_shader_cube = readShader("shaders/fs_tri.glsl");
     // printf("\ncube fragment shader: \n%s\n", fragment_shader_cube);
 
     unsigned int fs_cube = glCreateShader(GL_FRAGMENT_SHADER);
