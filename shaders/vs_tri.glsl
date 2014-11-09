@@ -1,8 +1,8 @@
 #version 400
 
-in vec3 cube;
+in vec3 tri;
 uniform mat4 proj, view;
 
 void main () {
-	gl_Position = proj * view * vec4 (cube, 1.0);
+	gl_Position = proj * view * vec4 (tri, 1.0);
 }

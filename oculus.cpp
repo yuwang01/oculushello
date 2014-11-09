@@ -47,7 +47,7 @@ static int fb_width, fb_height;
 static unsigned int fbo, fb_tex, fb_depth;
 static int fb_tex_width, fb_tex_height;
 
-static unsigned int cube_program;
+static unsigned int tri_program;
 
 static int initGLVR(void);
 static void cleanup(void);
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
             OVR::Quatf l_Orientation = OVR::Quatf(pose[eye].Orientation);
             OVR::Matrix4f l_ModelViewMatrix = OVR::Matrix4f(l_Orientation.Inverted());
 
-            glUseProgram(cube_program);
+            glUseProgram(tri_program);
             glUniformMatrix4fv(cube_proj_mat_location, 1, GL_FALSE, &(l_ProjectionMatrix.Transposed().M[0][0]));
             glUniformMatrix4fv(cube_view_mat_location, 1, GL_FALSE, &(l_ModelViewMatrix.Transposed().M[0][0]));
             glViewport(eye == ovrEye_Left ? 0 : fb_width / 2, 0, fb_width / 2, fb_height);
@@ -288,18 +288,18 @@ int initGLVR(void)
     glCompileShader(fs_cube);
     print_shader_info_log(fs_cube);
 
-    cube_program = glCreateProgram();
-    glAttachShader(cube_program, fs_cube);
-    glAttachShader(cube_program, vs_cube);
-    glLinkProgram(cube_program);
+    tri_program = glCreateProgram();
+    glAttachShader(tri_program, fs_cube);
+    glAttachShader(tri_program, vs_cube);
+    glLinkProgram(tri_program);
 
-    print_shader_program_info_log(cube_program);
+    print_shader_program_info_log(tri_program);
     fprintf(stdout, "%s\n", SEPARATOR);
     ////////////////////////////////////////////////////////////////////////////////
 
-    cube_view_mat_location = glGetUniformLocation(cube_program, "view");
-    cube_proj_mat_location = glGetUniformLocation(cube_program, "proj");
-    cube_location = glGetAttribLocation(cube_program, "cube");
+    cube_view_mat_location = glGetUniformLocation(tri_program, "view");
+    cube_proj_mat_location = glGetUniformLocation(tri_program, "proj");
+    cube_location = glGetAttribLocation(tri_program, "tri");
 
     glGenVertexArrays(1, &vertexArray);
     glBindVertexArray(vertexArray);
