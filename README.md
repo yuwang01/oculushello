@@ -8,4 +8,11 @@ Dependencies:
 	* Oculus Rift DK2
 	* Mac OS X 10.9.4 (tested)
 
+Functionalities:
+
+	* Initialize libOVR
+	* Initialize OpenGL 4.0 buffers, shaders, etc
+	* Load a red triangle
+	* Keyboard input support for A-S-D-W view update
+
 If you find it helpful, please feel free to let me know at wang.yu@umbc.edu.
