@@ -1,4 +1,4 @@
-A hello world program for Oculus Rift DK2 development.
+A hello world program for Oculus Rift DK2 development on Mac OS X.
 
 Dependencies:
 
