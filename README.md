@@ -13,6 +13,7 @@ Functionalities:
 	* Initialize libOVR
 	* Initialize OpenGL 4.0 buffers, shaders, etc
 	* Load a red triangle
+	* HMD pose tracking
 	* Keyboard input support for A-S-D-W view update
 
 If you find it helpful, please feel free to let me know at wang.yu@umbc.edu.
