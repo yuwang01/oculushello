@@ -15,8 +15,10 @@ float kViewHeight;
 float kViewDepth = 6.;
 
 float cam_pos[3]; // don't start at zero, or we will be too close
-float cam_yaw = 0.0f; // y-rotation in degrees
-float cam_roll = 0.0f; // z-rotation in degrees
+float cam_speed = 20.0f; // 1 unit per second
+
+double previous_seconds;
+double elapsedseconds;
 
 GLfloat vertices[] = {
     0.0f, 1.0f, -2.0f,
@@ -26,9 +28,9 @@ GLfloat vertices[] = {
 
 GLuint vertexArray;
 
-GLuint cube_view_mat_location;
-GLuint cube_proj_mat_location;
-GLuint cube_location;
+GLuint tri_view_mat_location;
+GLuint tri_proj_mat_location;
+GLuint tri_location;
 
 bool gl_log(const char* message, const char* filename, int line) {
 	FILE* file = fopen(GL_LOG_FILE, "a+");

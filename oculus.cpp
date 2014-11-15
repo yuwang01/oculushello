@@ -32,6 +32,7 @@
 #include "../OculusSDK/LibOVR/Src/OVR_CAPI_GL.h"
 #include "../OculusSDK/LibOVR/Src/CAPI/CAPI_HSWDisplay.h"
 
+static bool cam_moved = false;
 static bool debug = false;
 static GLFWwindow* window;
 static ovrHmd hmd;
@@ -66,7 +67,7 @@ int main(int argc, char **argv)
 
     cam_pos[0] = 0.0f;
     cam_pos[1] = 0.0f;
-    cam_pos[2] = 1.2*kViewDepth;
+    cam_pos[2] = 0.0f;
 
     if (initGLVR() == -1)
     {
@@ -76,6 +77,11 @@ int main(int argc, char **argv)
 
     while (!glfwWindowShouldClose(window))
     {
+        static double previousseconds = glfwGetTime();
+        double currentseconds = glfwGetTime ();
+        elapsedseconds = currentseconds - previousseconds;
+        previousseconds = currentseconds;
+
         // the drawing starts with a call to ovrHmd_BeginFrame 
         ovrHmd_BeginFrame(hmd, 0);
 
@@ -91,15 +97,26 @@ int main(int argc, char **argv)
 
             OVR::Matrix4f l_ProjectionMatrix = ovrMatrix4f_Projection(hmd->DefaultEyeFov[eye], 0.5, 500.0, 1);
             OVR::Quatf l_Orientation = OVR::Quatf(pose[eye].Orientation);
-            OVR::Matrix4f l_ModelViewMatrix = OVR::Matrix4f(l_Orientation.Inverted());
+            OVR::Matrix4f l_Translation = OVR::Matrix4f::Translation(-1*cam_pos[0], -1*cam_pos[1], -1*cam_pos[2]);
+            OVR::Matrix4f l_ModelViewMatrix = OVR::Matrix4f(l_Orientation.Inverted()) * l_Translation;
 
-            glUseProgram(tri_program);
-            glUniformMatrix4fv(cube_proj_mat_location, 1, GL_FALSE, &(l_ProjectionMatrix.Transposed().M[0][0]));
-            glUniformMatrix4fv(cube_view_mat_location, 1, GL_FALSE, &(l_ModelViewMatrix.Transposed().M[0][0]));
             glViewport(eye == ovrEye_Left ? 0 : fb_width / 2, 0, fb_width / 2, fb_height);
 
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glUseProgram(tri_program);
+            glUniformMatrix4fv(tri_proj_mat_location, 1, GL_FALSE, &(l_ProjectionMatrix.Transposed().M[0][0]));
+            glUniformMatrix4fv(tri_view_mat_location, 1, GL_FALSE, &(l_ModelViewMatrix.Transposed().M[0][0]));
+            
+            if (cam_moved == true)
+            {
+                OVR::Matrix4f l_Translation = OVR::Matrix4f::Translation(-1*cam_pos[0], -1*cam_pos[1], -1*cam_pos[2]);
+                OVR::Matrix4f l_ModelViewMatrix = OVR::Matrix4f(l_Orientation.Inverted()) * l_Translation;
 
+                glUseProgram(tri_program);
+                glUniformMatrix4fv(tri_view_mat_location, 1, GL_FALSE, &(l_ModelViewMatrix.Transposed().M[0][0]));
+            }
+
+            glUseProgram(tri_program);
+            glDrawArrays(GL_TRIANGLES, 0, 3);                
         }
 
         glBindVertexArray(0);
@@ -272,34 +289,34 @@ int initGLVR(void)
 
     fprintf(stdout, "%s\n", SEPARATOR);
     ////////////////////////////////////////////////////////////////////////////////
-    const char* vertex_shader_cube = readShader("shaders/vs_tri.glsl");
+    const char* vertex_shader_tri = readShader("shaders/vs_tri.glsl");
     // printf("\ncube vertex shader: \n%s\n", vertex_shader_cube);
 
-    unsigned int vs_cube = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs_cube, 1, &vertex_shader_cube, NULL);
-    glCompileShader(vs_cube);
-    print_shader_info_log(vs_cube);
+    unsigned int vs_tri = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vs_tri, 1, &vertex_shader_tri, NULL);
+    glCompileShader(vs_tri);
+    print_shader_info_log(vs_tri);
 
-    const char* fragment_shader_cube = readShader("shaders/fs_tri.glsl");
+    const char* fragment_shader_tri = readShader("shaders/fs_tri.glsl");
     // printf("\ncube fragment shader: \n%s\n", fragment_shader_cube);
 
-    unsigned int fs_cube = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs_cube, 1, &fragment_shader_cube, NULL);
-    glCompileShader(fs_cube);
-    print_shader_info_log(fs_cube);
+    unsigned int fs_tri = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fs_tri, 1, &fragment_shader_tri, NULL);
+    glCompileShader(fs_tri);
+    print_shader_info_log(fs_tri);
 
     tri_program = glCreateProgram();
-    glAttachShader(tri_program, fs_cube);
-    glAttachShader(tri_program, vs_cube);
+    glAttachShader(tri_program, fs_tri);
+    glAttachShader(tri_program, vs_tri);
     glLinkProgram(tri_program);
 
     print_shader_program_info_log(tri_program);
     fprintf(stdout, "%s\n", SEPARATOR);
     ////////////////////////////////////////////////////////////////////////////////
 
-    cube_view_mat_location = glGetUniformLocation(tri_program, "view");
-    cube_proj_mat_location = glGetUniformLocation(tri_program, "proj");
-    cube_location = glGetAttribLocation(tri_program, "tri");
+    tri_view_mat_location = glGetUniformLocation(tri_program, "view");
+    tri_proj_mat_location = glGetUniformLocation(tri_program, "proj");
+    tri_location = glGetAttribLocation(tri_program, "tri");
 
     glGenVertexArrays(1, &vertexArray);
     glBindVertexArray(vertexArray);
@@ -308,8 +325,8 @@ int initGLVR(void)
     glGenBuffers(1, &positionBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glVertexAttribPointer(cube_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    glEnableVertexAttribArray(cube_location);
+    glVertexAttribPointer(tri_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(tri_location);
 
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -394,6 +411,29 @@ static void KeyCallback(GLFWwindow* p_Window, int p_Key, int p_Scancode, int p_A
         if (p_Key == GLFW_KEY_A && p_Action == GLFW_PRESS)
         {
             fprintf(stdout, "A pressed\n");
+            cam_pos[0] -= cam_speed * elapsedseconds;
+            cam_moved = true;
+        }
+
+        if (p_Key == GLFW_KEY_D && p_Action == GLFW_PRESS)
+        {
+            fprintf(stdout, "D pressed\n");
+            cam_pos[0] += cam_speed * elapsedseconds;
+            cam_moved = true;
+        }
+
+        if (p_Key == GLFW_KEY_W && p_Action == GLFW_PRESS)
+        {
+            fprintf(stdout, "W pressed\n");
+            cam_pos[2] -= cam_speed * elapsedseconds;
+            cam_moved = true;
+        }
+
+        if (p_Key == GLFW_KEY_S && p_Action == GLFW_PRESS)
+        {
+            fprintf(stdout, "S pressed\n");
+            cam_pos[2] += cam_speed * elapsedseconds;
+            cam_moved = true;
         }
     }
 }
